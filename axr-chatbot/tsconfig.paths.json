@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@routes": ["src/routes"],
+      "@assets/*": ["src/assets/*"],
+      "@graphql/*": ["src/graphql/*"],
+      "@images/*": ["src/assets/images/*"],
+      "@animation/*": ["src/assets/lottie-animations/*"],
+      "@components/*": ["src/components/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@utils/*": ["src/utils/*"],
+      "@context/*": ["src/context/*"],
+      "@views/*": ["src/views/*"],
+      "@fonts/*": ["src/fonts/*"],
+      "@constants/*": ["src/constants/*"]
+    }
+  }
+}
