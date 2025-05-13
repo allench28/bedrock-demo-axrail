@@ -12,7 +12,7 @@ S3_BUCKET_NAME="my-bedrock-kb-$(date +%s)"  # Generates a unique bucket name
 WEB_BUCKET_NAME="web-portal-$(date +%s)"
 # S3_BUCKET_NAME="my-bedrock-kb"  # Generates a unique bucket name
 
-WEB_CRAWLER_URL="https://loremnotipsum.com/help-and-faq"
+WEB_CRAWLER_URL="https://www.axrail.com/about-us"
 CRAWLER_ROLE_NAME="BedrockCrawlerRole"
 LAMBDA_ROLE_NAME="LambdaAdminRole"
 
@@ -27,7 +27,7 @@ CLUSTER_IDENTIFIER="my-redshift-cluster"
 DB_NAME="mydb"
 MASTER_USERNAME="admin"
 MASTER_PASSWORD="YourStrongPassword123!"  # CHANGE THIS to a secure password
-NODE_TYPE="dc2.large"
+NODE_TYPE="ra3.xlplus"
 CLUSTER_TYPE="single-node"                # Options: single-node or multi-node
 NODE_COUNT=1                              # Only relevant for multi-node clusters
 SUBNET_GROUP_NAME="redshift-default-subnet-group"
