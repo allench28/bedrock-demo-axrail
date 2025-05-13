@@ -33,10 +33,50 @@ NODE_COUNT=1                              # Only relevant for multi-node cluster
 SUBNET_GROUP_NAME="redshift-default-subnet-group"
 PUBLICLY_ACCESSIBLE=true                  # Set to false if you don't want the cluster to be publicly accessible
 
-echo "Installing AWS CLI 1.38.18..."
-pip install awscli==1.38.18 --user
+
+
+install_pip_if_needed() {
+  if ! command -v pip &> /dev/null && ! command -v pip3 &> /dev/null; then
+    echo "pip/pip3 not found. Attempting to install..."
+    
+    # Check which package manager is available
+    if command -v apt-get &> /dev/null; then
+      echo "Detected Debian/Ubuntu. Installing pip..."
+      sudo apt-get update && sudo apt-get install -y python3-pip
+    elif command -v yum &> /dev/null; then
+      echo "Detected CentOS/RHEL/Amazon Linux. Installing pip..."
+      sudo yum install -y python3-pip
+    elif command -v brew &> /dev/null; then
+      echo "Detected macOS. Installing python (includes pip)..."
+      brew install python
+    else
+      echo "ERROR: Could not detect package manager. Please install pip manually and run the script again."
+      exit 1
+    fi
+    
+    # Verify installation
+    if command -v pip3 &> /dev/null; then
+      echo "pip3 installed successfully."
+    else
+      echo "ERROR: pip installation failed. Please install pip manually and run the script again."
+      exit 1
+    fi
+  else
+    echo "pip/pip3 is already installed."
+  fi
+}
+
+# Then replace your existing pip check with this call
+# Around line 420-430 where you currently check for pip
+
+# Call the function to install pip if needed
+install_pip_if_needed
+
 
 export AWS_DEFAULT_REGION=us-east-1
+
+echo "Installing AWS CLI 1.38.18..."
+pip install awscli==1.38.18 --user
 
 # Verify installation
 echo "Verifying installation..."
@@ -546,42 +586,6 @@ COLLECTION_ARN=$(aws opensearchserverless batch-get-collection \
 echo "Creating index in OpenSearch Serverless..."
 sleep 10
 
-install_pip_if_needed() {
-  if ! command -v pip &> /dev/null && ! command -v pip3 &> /dev/null; then
-    echo "pip/pip3 not found. Attempting to install..."
-    
-    # Check which package manager is available
-    if command -v apt-get &> /dev/null; then
-      echo "Detected Debian/Ubuntu. Installing pip..."
-      sudo apt-get update && sudo apt-get install -y python3-pip
-    elif command -v yum &> /dev/null; then
-      echo "Detected CentOS/RHEL/Amazon Linux. Installing pip..."
-      sudo yum install -y python3-pip
-    elif command -v brew &> /dev/null; then
-      echo "Detected macOS. Installing python (includes pip)..."
-      brew install python
-    else
-      echo "ERROR: Could not detect package manager. Please install pip manually and run the script again."
-      exit 1
-    fi
-    
-    # Verify installation
-    if command -v pip3 &> /dev/null; then
-      echo "pip3 installed successfully."
-    else
-      echo "ERROR: pip installation failed. Please install pip manually and run the script again."
-      exit 1
-    fi
-  else
-    echo "pip/pip3 is already installed."
-  fi
-}
-
-# Then replace your existing pip check with this call
-# Around line 420-430 where you currently check for pip
-
-# Call the function to install pip if needed
-install_pip_if_needed
 
 # First, create a JSON file with the index configuration
 cat > index-config.json << EOF
@@ -609,7 +613,7 @@ cat > index-config.json << EOF
     }
 }
 EOF
-sleep 5
+sleep 50
 # Define index name
 INDEX_NAME="kb-index"
 
@@ -629,7 +633,7 @@ else
     exit 1
 fi
 
-sleep 10
+sleep 20
 
 # Use awscurl if available (this handles AWS SigV4 signing)
 if command -v awscurl &> /dev/null; then
@@ -728,6 +732,8 @@ EOF
   # Run the Python verification script
   python verify_index.py
 fi
+
+sleep 120
 
 # Step 6: Create the Bedrock Knowledge Base
 echo "Creating Bedrock Knowledge Base..."
@@ -892,7 +898,7 @@ PROMPT_ID=$(aws bedrock-agent create-prompt \
   --output text)
 
 # Clean up JSON files
-rm -f bedrock-trust-policy.json prompt_config.json bedrock-policy.json security-policy.json network-policy.json access-policy.json kb-config.json s3-source-config.json web-crawler-config.json storage.json index-config.json bedrock-permissions-policy.json
+# rm -f bedrock-trust-policy.json prompt_config.json bedrock-policy.json security-policy.json network-policy.json access-policy.json kb-config.json s3-source-config.json web-crawler-config.json storage.json index-config.json bedrock-permissions-policy.json
 
 API_GW_URL="https://$API_ID.execute-api.$REGION.amazonaws.com/$STAGE_NAME"
 WEBSOCKET_URL="wss://$API_ID.execute-api.$REGION.amazonaws.com/$STAGE_NAME"
