@@ -949,60 +949,6 @@ DEFAULT_SG_ID=$(aws ec2 describe-security-groups \
 
 echo "Default Security Group ID: $DEFAULT_SG_ID"
 
-echo "Creating Redshift subnet group..."
-# Create a Redshift subnet group if it doesn't exist already
-aws redshift create-cluster-subnet-group \
-    --cluster-subnet-group-name $SUBNET_GROUP_NAME \
-    --description "Default subnet group for Redshift cluster" \
-    --subnet-ids $SUBNET_IDS \
-    --tags Key=Purpose,Value=RedshiftCluster || echo "Subnet group may already exist, continuing..."
-
-if [ "$PUBLICLY_ACCESSIBLE" = true ]; then
-    PUBLIC_ACCESS_FLAG="--publicly-accessible"
-else
-    PUBLIC_ACCESS_FLAG="--no-publicly-accessible"
-fi
-
-echo "Creating Redshift cluster..."
-# Create the Redshift cluster
-if [ "$CLUSTER_TYPE" = "single-node" ]; then
-    aws redshift create-cluster \
-        --cluster-identifier $CLUSTER_IDENTIFIER \
-        --node-type $NODE_TYPE \
-        --master-username $MASTER_USERNAME \
-        --master-user-password $MASTER_PASSWORD \
-        --cluster-type $CLUSTER_TYPE \
-        --db-name $DB_NAME \
-        --cluster-subnet-group-name $SUBNET_GROUP_NAME \
-        --vpc-security-group-ids $DEFAULT_SG_ID \
-        $PUBLIC_ACCESS_FLAG \
-        --tags Key=Environment,Value=Development
-else
-    aws redshift create-cluster \
-        --cluster-identifier $CLUSTER_IDENTIFIER \
-        --node-type $NODE_TYPE \
-        --master-username $MASTER_USERNAME \
-        --master-user-password $MASTER_PASSWORD \
-        --cluster-type $CLUSTER_TYPE \
-        --number-of-nodes $NODE_COUNT \
-        --db-name $DB_NAME \
-        --cluster-subnet-group-name $SUBNET_GROUP_NAME \
-        --vpc-security-group-ids $DEFAULT_SG_ID \
-        $PUBLIC_ACCESS_FLAG 
-fi
-
-echo "Waiting for cluster to become available..."
-aws redshift wait cluster-available --cluster-identifier $CLUSTER_IDENTIFIER
-
-echo "Getting cluster information..."
-aws redshift describe-clusters --cluster-identifier $CLUSTER_IDENTIFIER
-
-echo "Redshift cluster setup completed successfully!"
-echo "Cluster endpoint information is displayed above."
-echo "Database: $DB_NAME"
-echo "Username: $MASTER_USERNAME"
-echo "Password: $MASTER_PASSWORD"
-
 echo "Bedrock Knowledge Base setup complete!"
 echo "Websocket Url: $WEBSOCKET_URL"
 echo "Web bucket name: $WEB_BUCKET_NAME"
